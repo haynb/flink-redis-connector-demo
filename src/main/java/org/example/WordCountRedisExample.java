@@ -18,11 +18,16 @@ public class WordCountRedisExample {
 
     public static void main(String[] args) throws Exception {
         // 创建执行环境
-        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+//        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.createLocalEnvironment();
+//        env.setParallelism(1);  // 设置并行度为1
 
-        // 从本地的txt文件中读取数据
-        String filePath = "/home/hay/hay/flink/flink-1.18.1/file.txt";
-        DataStream<String> dataStream = env.readTextFile(filePath);
+//        // 从本地的txt文件中读取数据
+//        String filePath = "/home/hay/hay/flink/flink-1.18.1/file.txt";
+//        DataStream<String> dataStream = env.readTextFile(filePath);
+        // 从现有字符串创建数据流
+        String inputString = "hello world hello flink hello java";
+        DataStream<String> dataStream = env.fromElements(inputString);
 
         // 进行单词计数
         DataStream<Tuple2<String, Integer>> wordCounts = dataStream
@@ -41,13 +46,13 @@ public class WordCountRedisExample {
         // 打印单词计数结果
         wordCounts.print();
 
-        // 将结果写入 Redis
-        FlinkJedisPoolConfig jedisPoolConfig = new FlinkJedisPoolConfig.Builder()
-                .setHost("localhost")
-                .setPort(6379)
-                .build();
-
-        wordCounts.addSink(new RedisSink<>(jedisPoolConfig, new WordCountRedisMapper()));
+//        // 将结果写入 Redis
+//        FlinkJedisPoolConfig jedisPoolConfig = new FlinkJedisPoolConfig.Builder()
+//                .setHost("localhost")
+//                .setPort(6379)
+//                .build();
+//
+//        wordCounts.addSink(new RedisSink<>(jedisPoolConfig, new WordCountRedisMapper()));
 
         // 执行作业
         env.execute("Word Count Redis Example");
@@ -62,7 +67,7 @@ public class WordCountRedisExample {
 
         @Override
         public String getKeyFromData(Tuple2<String, Integer> data) {
-            return "word_count:" + data.f0;
+            return data.f0;
         }
 
         @Override
